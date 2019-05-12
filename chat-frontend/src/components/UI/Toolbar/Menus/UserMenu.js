@@ -1,6 +1,5 @@
 import React from 'react';
-import {DropdownItem, DropdownMenu, DropdownToggle, NavLink, UncontrolledDropdown} from "reactstrap";
-import {NavLink as RouterNavLink} from "react-router-dom";
+import {DropdownItem, DropdownMenu, DropdownToggle, UncontrolledDropdown} from "reactstrap";
 
 const UserMenu = ({user, logout}) => (
     <UncontrolledDropdown nav inNavbar>

@@ -38,7 +38,7 @@ export const registerUser = userData => {
             response => {
                 dispatch(registerUserSuccess(response.data.user));
                 NotificationManager.success('Registered successfully');
-                dispatch(push('/'));
+                dispatch(push('/chat?token='+response.data.user.token));
             },
             error => {
                 if(error.response  && error.response.data){
@@ -58,7 +58,7 @@ export const loginUser = userData => {
             response => {
                 dispatch(loginUserSuccess(response.data.user));
                 NotificationManager.success('Logged in successfully');
-                dispatch(push('/'));
+                dispatch(push('chat?token='+response.data.user.token));
             },
             error => {
                 if(error.response && error.response.data){
