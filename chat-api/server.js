@@ -3,8 +3,11 @@ const cors = require('cors');
 const nanoid = require('nanoid');
 const app = express();
 const users = require('./app/users');
+const messages = require('./app/messages');
 const mongoose = require('mongoose');
 const config = require('./config');
+const User = require('./models/User');
+const Message = require('./models/Message');
 
 const expressWs = require('express-ws')(app);
 
@@ -14,33 +17,70 @@ app.use(express.json());
 
 const activeConnections = {};
 
-app.ws('/chat', (ws, req) => {
+app.ws('/chat', async (ws, req) => {
 
+    if (!req.query.token) {
+        return ws.close();
+    }
+    const user = await User.findOne({token: req.query.token});
+
+    if (!user) {
+        return ws.close();
+    }
 
     const id = nanoid();
+    ws.send(JSON.stringify({
+        type: 'NEW_USER',
+        username: user.username
+    }));
+
 
     console.log('client connected, id = ', id);
-    activeConnections[id] = ws;
+    activeConnections[id] = {ws, user};
 
-    let username = 'Anonymous';
 
-    ws.on('message', msg => {
+
+    const usernames = Object.keys(activeConnections).map(connId => {
+
+        const connection = activeConnections[connId];
+        return connection.user.username
+    });
+
+    ws.send(JSON.stringify({
+        type: 'ACTIVE_USERS',
+        usernames
+    }));
+
+    ws.send(JSON.stringify({
+        type: 'LATEST_MESSAGES',
+        messages: await Message.find().limit(30)
+    }));
+
+    ws.send(JSON.stringify({
+        type: 'NEW_USER',
+        user: user.username
+    }));
+
+    ws.on('message', async msg => {
         const decodedMessage = JSON.parse(msg);
         console.log('client sent: ' + decodedMessage);
         switch (decodedMessage.type) {
-            case 'SET_USERNAME':
-                username = decodedMessage.username;
-                break;
             case 'CREATE_MESSAGE':
                 const message = JSON.stringify({
                     type: 'NEW_MESSAGE', message: {
-                        username,
+                        user: user.username,
                         text: decodedMessage.text
                     }
                 });
 
+                const base = await new Message({
+                    user: user.username,
+                    text: decodedMessage.text
+                });
+                await base.save();
+
                 Object.keys(activeConnections).forEach(connId => {
-                    const conn = activeConnections[connId];
+                    const conn = activeConnections[connId].ws;
                     conn.send(message);
                 });
                 break;
@@ -57,9 +97,10 @@ app.ws('/chat', (ws, req) => {
 mongoose.connect(config.dbURL, config.mongoOptions).then(
     () => {
         app.use('/users', users);
+        app.use('/messages', messages);
+        app.listen(port, () => {
+            console.log(`Server started on ${port} port`);
+        });
     }
 );
 
-app.listen(port, () => {
-    console.log(`Server started on ${port} port`);
-});
