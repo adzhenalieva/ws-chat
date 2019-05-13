@@ -31,9 +31,7 @@ app.ws('/chat', async (ws, req) => {
     console.log('client connected, id = ', id);
     activeConnections[id] = {ws, user};
 
-
     const usernames = Object.keys(activeConnections).map(connId => {
-
         const connection = activeConnections[connId];
         return connection.user.username
     });
@@ -42,6 +40,7 @@ app.ws('/chat', async (ws, req) => {
         type: 'ACTIVE_USERS',
         usernames
     }));
+
 
     ws.send(JSON.stringify({
         type: 'LATEST_MESSAGES',

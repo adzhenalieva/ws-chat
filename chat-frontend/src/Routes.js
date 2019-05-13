@@ -3,7 +3,6 @@ import {Redirect, Route, Switch} from "react-router-dom";
 
 import Register from "./containers/Register/Register";
 import Login from "./containers/Login/Login";
-import MainPage from "./containers/MainPage/MainPage";
 import Chat from "./containers/Chat/Chat";
 
 
@@ -15,9 +14,8 @@ const ProtectedRoute = ({isAllowed, ...props}) => (
 const Routes = ({user}) => {
     return (
         <Switch>
-            <Route path="/" exact component={MainPage}/>
             <ProtectedRoute isAllowed={user}
-                           exact path="/chat"
+                           exact path="/"
                             component={Chat}/>
             <Route path="/register" exact component={Register}/>
             <Route path="/login" exact component={Login}/>

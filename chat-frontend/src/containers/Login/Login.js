@@ -25,7 +25,7 @@ class Login extends Component {
     render() {
         return (
             <Fragment>
-                <h2 className="mb-4">Login</h2>
+                <h2 className="mb-4">To join chat you should Login</h2>
 
                 {this.props.error && this.props.error.global && (
                     <Alert color="danger">
