@@ -3,7 +3,6 @@ const cors = require('cors');
 const nanoid = require('nanoid');
 const app = express();
 const users = require('./app/users');
-const messages = require('./app/messages');
 const mongoose = require('mongoose');
 const config = require('./config');
 const User = require('./models/User');
@@ -29,15 +28,8 @@ app.ws('/chat', async (ws, req) => {
     }
 
     const id = nanoid();
-    ws.send(JSON.stringify({
-        type: 'NEW_USER',
-        username: user.username
-    }));
-
-
     console.log('client connected, id = ', id);
     activeConnections[id] = {ws, user};
-
 
 
     const usernames = Object.keys(activeConnections).map(connId => {
@@ -56,10 +48,6 @@ app.ws('/chat', async (ws, req) => {
         messages: await Message.find().limit(30)
     }));
 
-    ws.send(JSON.stringify({
-        type: 'NEW_USER',
-        user: user.username
-    }));
 
     ws.on('message', async msg => {
         const decodedMessage = JSON.parse(msg);
@@ -97,7 +85,7 @@ app.ws('/chat', async (ws, req) => {
 mongoose.connect(config.dbURL, config.mongoOptions).then(
     () => {
         app.use('/users', users);
-        app.use('/messages', messages);
+
         app.listen(port, () => {
             console.log(`Server started on ${port} port`);
         });

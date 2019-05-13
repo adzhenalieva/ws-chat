@@ -55,7 +55,7 @@ router.delete('/sessions', async (req, res) => {
         return res.send(success);
     }
 
-    user.generateToken();
+    await user.generateToken();
     user.save();
 
     return res.send(success);
