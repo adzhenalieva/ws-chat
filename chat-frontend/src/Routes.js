@@ -17,7 +17,7 @@ const Routes = ({user}) => {
         <Switch>
             <Route path="/" exact component={MainPage}/>
             <ProtectedRoute isAllowed={user}
-                            path="/chat"
+                           exact path="/chat"
                             component={Chat}/>
             <Route path="/register" exact component={Register}/>
             <Route path="/login" exact component={Login}/>

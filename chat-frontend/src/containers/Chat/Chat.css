@@ -1,0 +1,16 @@
+.Messages b{
+    display: inline-block;
+    margin-right: 15px;
+    margin-bottom: 15px;
+}
+h4{
+    margin-bottom: 20px;
+}
+.SendMessage{
+    margin: 15px 0;
+}
+.SendMessage input{
+    display: inline-block;
+    margin-right: 15px;
+    padding: 10px;
+}

@@ -58,7 +58,7 @@ export const loginUser = userData => {
             response => {
                 dispatch(loginUserSuccess(response.data.user));
                 NotificationManager.success('Logged in successfully');
-                dispatch(push('chat?token='+response.data.user.token));
+                dispatch(push('/chat?token='+response.data.user.token));
             },
             error => {
                 if(error.response && error.response.data){
