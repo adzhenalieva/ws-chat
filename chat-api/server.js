@@ -3,6 +3,7 @@ const cors = require('cors');
 const nanoid = require('nanoid');
 const app = express();
 const users = require('./app/users');
+const messages = require('./app/messages');
 const mongoose = require('mongoose');
 const config = require('./config');
 const User = require('./models/User');
@@ -50,26 +51,29 @@ app.ws('/chat', async (ws, req) => {
 
     ws.on('message', async msg => {
         const decodedMessage = JSON.parse(msg);
-        console.log('client sent: ' + decodedMessage);
         switch (decodedMessage.type) {
             case 'CREATE_MESSAGE':
-                const message = JSON.stringify({
-                    type: 'NEW_MESSAGE', message: {
-                        user: user.username,
-                        text: decodedMessage.text
-                    }
-                });
-
                 const base = await new Message({
                     user: user.username,
                     text: decodedMessage.text
                 });
                 await base.save();
 
+                const message = await JSON.stringify({
+                    type: 'NEW_MESSAGE',
+                    messages: base
+                });
+
                 Object.keys(activeConnections).forEach(connId => {
                     const conn = activeConnections[connId].ws;
                     conn.send(message);
                 });
+                break;
+            case 'DELETE_MESSAGE':
+                ws.send(JSON.stringify({
+                    type: 'LATEST_MESSAGES',
+                    messages: await Message.find()
+                }));
                 break;
             default:
                 console.log('Unknown message type ', decodedMessage.type);
@@ -84,6 +88,7 @@ app.ws('/chat', async (ws, req) => {
 mongoose.connect(config.dbURL, config.mongoOptions).then(
     () => {
         app.use('/users', users);
+        app.use('/messages', messages);
 
         app.listen(port, () => {
             console.log(`Server started on ${port} port`);
