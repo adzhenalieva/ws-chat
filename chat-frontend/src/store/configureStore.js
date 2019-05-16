@@ -2,6 +2,7 @@ import {createBrowserHistory} from "history";
 import {applyMiddleware, combineReducers, compose, createStore} from "redux";
 import axios from '../axios-api';
 import usersReducer from "./reducers/usersReducer";
+import messagesReducer from "./reducers/messagesReducer";
 import {connectRouter, routerMiddleware} from "connected-react-router";
 import thunkMiddleware from "redux-thunk";
 import {loadFromLocalStorage, saveToLocalStorage} from "./LocalStorage";
@@ -12,6 +13,7 @@ export const history = createBrowserHistory();
 
 const rootReducer = combineReducers({
     users: usersReducer,
+    messages: messagesReducer,
     router: connectRouter(history)
 });
 
