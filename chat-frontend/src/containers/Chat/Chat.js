@@ -6,11 +6,8 @@ import {connect} from "react-redux";
 
 import './Chat.css';
 import {
-    activeUsers,
-    deleteMessage,
-    fetchMessages,
-    latestMessages,
-    saveMessages
+    chatAction,
+    deleteMessage
 } from "../../store/actions/messagesActions";
 
 class Chat extends Component {
@@ -26,15 +23,7 @@ class Chat extends Component {
 
         this.state.websocket.onmessage = event => {
             const decodedMessage = JSON.parse(event.data);
-            if (decodedMessage.type === 'NEW_MESSAGE') {
-                this.props.saveMessages(decodedMessage.messages);
-            }
-            if (decodedMessage.type === 'ACTIVE_USERS') {
-               this.props.activeUsers(decodedMessage.usernames)
-            }
-            if (decodedMessage.type === 'LATEST_MESSAGES') {
-                this.props.latestMessages(decodedMessage.messages)
-            }
+            this.props.chatAction(decodedMessage.type, decodedMessage.messages);
         };
 
         this.state.websocket.onclose = () => {
@@ -53,13 +42,12 @@ class Chat extends Component {
         }
     }
 
-    componentDidUpdate(prevProps, prevState, snapshot) {
-        if (prevProps.messages.length !== this.props.messages.length) {
-            this.props.fetchMessages();
-        }
-    }
-
     componentWillUnmount() {
+        const message = JSON.stringify({
+            type: 'DELETE_USER',
+            user: this.props.user.username
+        });
+        this.state.websocket.send(message);
         this.state.websocket.close();
     }
 
@@ -135,16 +123,15 @@ class Chat extends Component {
 const mapStateToProps = state => ({
     user: state.users.user,
     messages: state.messages.messages,
-    usernames: state.messages.usernames
+    usernames: state.messages.usernames,
+
+    test: state.messages.test
 });
 
 const mapDispatchToProps = dispatch => {
     return {
         deleteMessage: id => dispatch(deleteMessage(id)),
-        saveMessages: message => dispatch(saveMessages(message)),
-        latestMessages: messages => dispatch(latestMessages(messages)),
-        fetchMessages: () => dispatch(fetchMessages()),
-        activeUsers: users => dispatch(activeUsers(users))
+        chatAction: (type, message) => dispatch(chatAction(type, message)),
     }
 };
 

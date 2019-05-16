@@ -9,17 +9,7 @@ const deleteSuccess = () => ({type: DELETE_SUCCESS});
 
 const deleteFailure = error => ({type: DELETE_FAILURE, error});
 
-export const saveMessages = message => ({type: "NEW_MESSAGE", message});
-export const latestMessages = messages => ({type: "LATEST_MESSAGES", messages});
-export const activeUsers = users => ({type: "ACTIVE_USERS", users})
-
-export const fetchMessages = () => {
-    return dispatch => {
-        return axios.get('/messages').then(
-            response => dispatch(latestMessages(response.data))
-        );
-    };
-};
+export const chatAction = (type, message) => ({type, message});
 
 export const deleteMessage = id => {
     return dispatch => {
