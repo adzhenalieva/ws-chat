@@ -31,7 +31,13 @@ app.ws('/chat', async (ws, req) => {
     const id = nanoid();
     console.log('client connected, id = ', id);
     activeConnections[id] = {ws, user};
-
+    Object.keys(activeConnections).forEach(connId => {
+        const conn = activeConnections[connId].ws;
+        conn.send(JSON.stringify({
+            type: 'NEW_USER',
+            messages: user
+        }));
+    });
     const usernames = Object.keys(activeConnections).map(connId => {
         const connection = activeConnections[connId];
         return connection.user.username
@@ -39,9 +45,8 @@ app.ws('/chat', async (ws, req) => {
 
     ws.send(JSON.stringify({
         type: 'ACTIVE_USERS',
-        usernames
+        messages: usernames
     }));
-
 
     ws.send(JSON.stringify({
         type: 'LATEST_MESSAGES',
@@ -70,17 +75,34 @@ app.ws('/chat', async (ws, req) => {
                 });
                 break;
             case 'DELETE_MESSAGE':
-                ws.send(JSON.stringify({
+                let newMessages = (JSON.stringify({
                     type: 'LATEST_MESSAGES',
                     messages: await Message.find()
                 }));
+
+                Object.keys(activeConnections).forEach(connId => {
+                    const conn = activeConnections[connId].ws;
+                    conn.send(newMessages);
+                });
+
+                break;
+            case 'DELETE_USER':
+
+                let deleteUser = (JSON.stringify({
+                    type: 'DELETE_USER',
+                    messages: decodedMessage.user
+                }));
+                await Object.keys(activeConnections).forEach(connId => {
+                    const conn = activeConnections[connId].ws;
+                    conn.send(deleteUser);
+                });
                 break;
             default:
                 console.log('Unknown message type ', decodedMessage.type);
         }
     });
 
-    ws.on('close', msg => {
+    ws.on('close', () => {
         console.log('client disconnected');
         delete activeConnections[id];
     })
